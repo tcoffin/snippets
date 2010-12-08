@@ -1,0 +1,6 @@
+This repository is a collection of script that I've created for various purposes.
+
+backupWebhost - a script for backing up my web hosts and databases. Uses a configuration file for the list of hosts, paths and databases to backup
+
+License: Creative Commons - Attribution Non-Commercial Share Alike (i.e. enjoy it, use it, extend it but don't profit from it. Oh, and give me some credit so I can google my name and feel good about it)
+Warranty: none. There is a infinitesimally low probability that this code will the result in the death of extremely cute kittens, and in that unlikely event; I am not responsible.
