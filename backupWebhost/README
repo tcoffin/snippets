@@ -1,0 +1,22 @@
+This little script is for backing up a remotely hosted website and database.
+It rsync's the data and grabs a dump of the database for every site listed in the sites.conf file.
+
+usage:
+backupRemote.pl <sites.conf files> <backup destination>
+
+The format of sites is as follows:
+<ssh hostname>,<directory of files on ssh host>,[database host],[database name],[database login],[database password]
+
+each line of sites.conf is a different site to backup.
+Database information is optional. Database host is accessed from ssh hostname and the database is dumped using mysqldump.
+The assumption is that you've set up your ssh authorized keys properly (i.e. you can see to <ssh hostname> without a password).
+
+Local dependancies:
+perl 5
+ssh 
+rsync
+gzip
+tar
+
+Remote dependancies:
+mysqldump
