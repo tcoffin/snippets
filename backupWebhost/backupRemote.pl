@@ -19,13 +19,13 @@ if ( length ( $sitesconf ) == 0 || length ( $backupdir ) == 0 )
 
 open ( SITES, $sitesconf ) || die "Unable to open $sitesconf\n";
 
+my $datestamp = sprintf "%04d-%02d-%02d-%02d:%02d:%02d", ((localtime)[5]%100+2000, (localtime)[4]+1, (localtime)[3], (localtime)[2], (localtime)[1], (localtime)[0]);
 my $tmpdir = "$backupdir/.tmp" . int(rand(1000));
 
 while ( <SITES> )
 {
 	chomp;
 	( my $host, my $path, my $dbhost, my $dbname, my $dbuser, my $dbpass ) = split ( "," );
-	my $datestamp = sprintf "%04d-%02d-%02d-%02d:%02d:%02d", ((localtime)[5]%100+2000, (localtime)[4]+1, (localtime)[3], (localtime)[2], (localtime)[1], (localtime)[0]);
 
 	# rsync -az $host:$path $backupdir/.tmp$RANDOM/
 	print "rsync'ing $host:$path\n";
@@ -35,18 +35,25 @@ while ( <SITES> )
 		die "error executing rsync -az $host:$path $tmpdir";
 	}
 
-	$archive = "$backupdir/$datestamp" . '.tar.gz';
+	$prefix = $path;
+	$prefix =~ s/\//-/g;
+	$archive = "$backupdir/$host-$prefix-$datestamp.tar.bz";
 	# tar -czf `date +%F-%T`.tar.gz $backupdir/.tmp$RANDOM
-	`tar --remove-files -czf $archive $tmpdir/*`;
+	`tar --remove-files -c $tmpdir/* | bzip2 -9 > $archive`;
 
 	if ( $? != 0 )
 	{
 		die "error tar'ing $tmpdir";
 	}
 
+	if ( length ( $dbhost ) == 0 )
+	{
+		next;
+	}
+
 	# ssh -C $host 'mysqldump -h $dbhost -u $dbuser -p$dbpass --databases $dbname' | gzip > `date +%F-%T`.sql.gz
 	print "dumping database $dbname\n";
-	`ssh -C $host 'mysqldump -h $dbhost -u $dbuser -p$dbpass --databases $dbname' | gzip > $backupdir/$datestamp.sql.gz`;
+	`ssh -C $host 'mysqldump -h $dbhost -u $dbuser -p$dbpass --databases $dbname' | bzip2 -9 > $backupdir/$host-$prefix-$datestamp.sql.bz`;
 
 	if ( $? != 0 )
 	{
